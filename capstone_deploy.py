@@ -1,11 +1,41 @@
+import time
 import streamlit as st
 import pandas as pd
+import pickle
+
+df_load = pickle.load(open('source/data_final.pkl', 'rb'))
+model_load = pickle.load(open('source/model.pkl', 'rb'))
+accuracy_load = pickle.load(open('source/accuracy_model.pkl', 'rb'))
+df_final = df_load["data"]
+
+
+scaler = pickle.load(open("scaler.pkl", "rb"))
+
+def selected_model():
+    with st.expander("CHOOSE MODEL PREDICTION"):
+        mdl = st.selectbox(label="Select Model", options=["-", "KNN", "Random Forest", "Decision Tree"])
+        if mdl == "Random Forest":
+            model = model_load["rf"]
+            accuracy = accuracy_load["accuracy_rf"]
+        elif mdl == "KNN":
+            model = model_load["knn"]
+            accuracy = accuracy_load["accuracy_knn"]
+        elif mdl == "Decision Tree":
+            model = model_load["dt"]
+            accuracy = accuracy_load["accuracy_dt"]
+        else:
+            model = None
+            accuracy = None
+
+    return mdl, model, accuracy
 
 def input_data():
     st.sidebar.title('Input Data')
 
     with st.sidebar.expander("AGE"):
-        age = st.number_input('Input Age', min_value=0, max_value=100, value=0, step=1)
+        # min_age = int(df_final["age"].min())
+        # max_age = int(df_final["age"].max())
+        age = st.number_input('Input Age', min_value=0, max_value=100, step=1)
 
     with st.sidebar.expander("SEX"):
         sex_sb = st.selectbox(
@@ -48,8 +78,8 @@ def input_data():
     with st.sidebar.expander("RESTING BLOOD PRESSURE "):
         trestbps = st.number_input(
             label="Resting BP (mm Hg)",
-            # min_value=int(df_final["trestbps"].min()),
-            # max_value=int(df_final["trestbps"].max()),
+            min_value=int(df_final["trestbps"].min()),
+            max_value=int(df_final["trestbps"].max()),
         )
         # st.sidebar.write(
         #     f"Nilai :orange[Min]: :orange[**{df_final['trestbps'].min()}**], Nilai :red[Max]: :red[**{df_final['trestbps'].max()}**]"
@@ -58,8 +88,8 @@ def input_data():
     with st.sidebar.expander("SERUM CHOLESTORAL "):
         chol = st.number_input(
             label="Serum Cholestoral (mg/dl)",
-            # min_value=int(df_final["chol"].min()),
-            # max_value=int(df_final["chol"].max()),
+            min_value=int(df_final["chol"].min()),
+            max_value=int(df_final["chol"].max()),
         )
         # st.sidebar.write(
         #     f"Nilai :orange[Min]: :orange[**{df_final['chol'].min()}**], Nilai :red[Max]: :red[**{df_final['chol'].max()}**]"
@@ -104,8 +134,8 @@ def input_data():
     with st.sidebar.expander("MAXIMUM HEART RATE"):
         thalach = st.number_input(
             label="Maximum Heart Rate",
-            # min_value=int(df_final["thalach"].min()),
-            # max_value=int(df_final["thalach"].max()),
+            min_value=int(df_final["thalach"].min()),
+            max_value=int(df_final["thalach"].max()),
         )
         # st.sidebar.write(
         #     f"Nilai :orange[Min]: :orange[**{df_final['thalach'].min()}**], Nilai :red[Max]: :red[**{df_final['thalach'].max()}**]"
@@ -128,15 +158,16 @@ def input_data():
     with st.sidebar.expander("ST DEPRESSION"):
         oldpeak = st.number_input(
             label="ST Depression induced by exercise relative to rest",
-            # min_value=float(df_final["oldpeak"].min()),
-            # max_value=float(df_final["oldpeak"].max()),
+            min_value=float(df_final["oldpeak"].min()),
+            max_value=float(df_final["oldpeak"].max()),
+            step=0.5
         )
         # st.sidebar.write(
         #     f"Nilai :orange[Min]: :orange[**{df_final['oldpeak'].min()}**], Nilai :red[Max]: :red[**{df_final['oldpeak'].max()}**]"
         # )
 
     # Menyusun data input ke dalam dataframe
-    data = {
+    data_print = {
         "Age": [age],
         "Sex": [sex_sb],
         "Chest pain type": [cp_sb],
@@ -148,27 +179,95 @@ def input_data():
         "Exercise induced angina?": [exang_sb],
         "ST depression": [oldpeak],
     }
-    df = pd.DataFrame(data, index=["input"])
-    return df
+    
+    data_process = {
+        "age": [age],
+        "sex": [sex],
+        "cp": [cp],
+        "trestbps": [trestbps],
+        "chol": [chol],
+        "fbs": [fbs],
+        "restecg": [restecg],
+        "thalach": [thalach],
+        "exang": [exang],
+        "oldpeak": [oldpeak],
+    }
+
+    
+    df_print = pd.DataFrame(data_print, index=["INPUT"])
+    df_process = pd.DataFrame(data_process, index=["input"])
+    
+    return df_print, df_process
 
 def main():
     # Title
     st.title('Heart Disease Prediction')
+
     
     # Mengambil data input
-    df = input_data()
+    df_print, df_process = input_data()
     
+    mdl, model, accuracy = selected_model()
+
+
     # Menampilkan data input dalam bentuk tabel
+    if accuracy is not None:
+        st.metric(label=f"{mdl} Accuracy", value=f"{accuracy*100:.1f} %")
+
+        
+
     st.subheader('Data Input')
-    st.write(df.T)
+    # st.write(df_final)
+    st.write(df_print.T)
+    # st.write(df_process.T)
 
     submit = st.button('Submit', key='submit', type='primary')
 
+    if model is None:
+        st.toast('Please select model')
+        # st.write('Please select model')
+        return
+
+
+
+
+
     if submit:
-        st.text('test')
+        if df_process.isnull().sum().sum() > 0:
+            submit = False
+            st.toast('Please fill all the data')
+            # st.write('Please fill all the data')
+            return
+        bar = st.progress(0)
+        status_text = st.empty()
+        for i in range(1, 101):
+            status_text.text(f"{i}% complete")
+            bar.progress(i)
+            time.sleep(0.01)
+            if i == 100:
+                time.sleep(1)
+                status_text.empty()
+                bar.empty()
+
         # Proses prediksi
-        # pred = predict(df)
-        # st.write('Prediction:', pred)
+
+        df_scale = scaler.transform(df_process)
+
+
+        pred = model.predict(df_scale)
+
+        if pred == 0:
+            result = ":green[**No Heart Disease**]"
+        elif pred == 1:
+            result = ":orange[**Heart Disease lv 1**]"
+        elif pred == 2:
+            result = ":orange[**Heart Disease lv 2**]"
+        elif pred == 3:
+            result = ":red[**Heart Disease lv 3**]"
+        elif pred == 4:
+            result = ":red[**Heart Disease lv 4**]"
+
+        st.subheader(f'Prediction : {result}')
 
     
 
