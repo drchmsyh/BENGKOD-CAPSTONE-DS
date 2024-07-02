@@ -9,7 +9,7 @@ accuracy_load = pickle.load(open('source/accuracy_model.pkl', 'rb'))
 df_final = df_load["data"]
 
 
-scaler = pickle.load(open("scaler.pkl", "rb"))
+scaler = pickle.load(open("source/scaler.pkl", "rb"))
 
 def selected_model():
     with st.expander("CHOOSE MODEL PREDICTION"):
