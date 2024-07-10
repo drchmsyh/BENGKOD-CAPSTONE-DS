@@ -8,7 +8,6 @@ model_load = pickle.load(open('source/model.pkl', 'rb'))
 accuracy_load = pickle.load(open('source/accuracy_model.pkl', 'rb'))
 df_final = df_load["data"]
 
-
 scaler = pickle.load(open("source/scaler.pkl", "rb"))
 
 def selected_model():
@@ -32,6 +31,7 @@ def selected_model():
 def input_data():
     st.sidebar.title('Input Data')
 
+    
     with st.sidebar.expander("AGE"):
         # min_age = int(df_final["age"].min())
         # max_age = int(df_final["age"].max())
@@ -76,24 +76,23 @@ def input_data():
         # -- Nilai 4: asymptomatic
 
     with st.sidebar.expander("RESTING BLOOD PRESSURE "):
-        trestbps = st.number_input(
-            label="Resting BP (mm Hg)",
-            min_value=int(df_final["trestbps"].min()),
-            max_value=int(df_final["trestbps"].max()),
-        )
+        # trestbps = st.number_input(
+        #     label="Resting BP (mm Hg)",
+        #     min_value=int(df_final["trestbps"].min()),
+        #     max_value=int(df_final["trestbps"].max()),
+        # )
+        trestbps = st.slider('Resting BP (mm Hg)', min_value=int(0), max_value=int(df_final["trestbps"].max()))
         # st.sidebar.write(
         #     f"Nilai :orange[Min]: :orange[**{df_final['trestbps'].min()}**], Nilai :red[Max]: :red[**{df_final['trestbps'].max()}**]"
         # )
 
     with st.sidebar.expander("SERUM CHOLESTORAL "):
-        chol = st.number_input(
-            label="Serum Cholestoral (mg/dl)",
-            min_value=int(df_final["chol"].min()),
-            max_value=int(df_final["chol"].max()),
-        )
-        # st.sidebar.write(
-        #     f"Nilai :orange[Min]: :orange[**{df_final['chol'].min()}**], Nilai :red[Max]: :red[**{df_final['chol'].max()}**]"
+        # chol = st.number_input(
+        #     label="Serum Cholestoral (mg/dl)",
+        #     min_value=int(df_final["chol"].min()),
+        #     max_value=int(df_final["chol"].max()),
         # )
+        chol = st.slider('Serum Cholestoral (mg/dl)', min_value=int(df_final["chol"].min()), max_value=int(df_final["chol"].max()))
  
     with st.sidebar.expander("FBS > 120 mg/dl?"):
         fbs_sb = st.selectbox(
@@ -132,14 +131,12 @@ def input_data():
         # -- Nilai 2: menunjukkan hipertrofi ventrikel kiri
 
     with st.sidebar.expander("MAXIMUM HEART RATE"):
-        thalach = st.number_input(
-            label="Maximum Heart Rate",
-            min_value=int(df_final["thalach"].min()),
-            max_value=int(df_final["thalach"].max()),
-        )
-        # st.sidebar.write(
-        #     f"Nilai :orange[Min]: :orange[**{df_final['thalach'].min()}**], Nilai :red[Max]: :red[**{df_final['thalach'].max()}**]"
+        # thalach = st.number_input(
+        #     label="Maximum Heart Rate",
+        #     min_value=int(df_final["thalach"].min()),
+        #     max_value=int(df_final["thalach"].max()),
         # )
+        thalach = st.slider('Maximum Heart Rate', min_value=int(df_final["thalach"].min()), max_value=int(df_final["thalach"].max()))
 
     with st.sidebar.expander("EXERCISE INDUCED ANGINA"):
         exang_sb = st.selectbox(
@@ -156,12 +153,13 @@ def input_data():
         # -- Nilai 1: Iya
 
     with st.sidebar.expander("ST DEPRESSION"):
-        oldpeak = st.number_input(
-            label="ST Depression induced by exercise relative to rest",
-            min_value=float(df_final["oldpeak"].min()),
-            max_value=float(df_final["oldpeak"].max()),
-            step=0.5
-        )
+        # oldpeak = st.number_input(
+        #     label="ST Depression induced by exercise relative to rest",
+        #     min_value=float(df_final["oldpeak"].min()),
+        #     max_value=float(df_final["oldpeak"].max()),
+        #     step=0.5
+        # )
+        oldpeak = st.slider('ST Depression induced by exercise relative to rest', min_value=float(df_final["oldpeak"].min()), max_value=float(df_final["oldpeak"].max()), step=0.5)
         # st.sidebar.write(
         #     f"Nilai :orange[Min]: :orange[**{df_final['oldpeak'].min()}**], Nilai :red[Max]: :red[**{df_final['oldpeak'].max()}**]"
         # )
@@ -250,6 +248,7 @@ def main():
                 bar.empty()
 
         # Proses prediksi
+        
 
         df_scale = scaler.transform(df_process)
 
