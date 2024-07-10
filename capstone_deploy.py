@@ -3,12 +3,12 @@ import streamlit as st
 import pandas as pd
 import pickle
 
-df_load = pickle.load(open('data_final.pkl', 'rb'))
-model_load = pickle.load(open('model.pkl', 'rb'))
-accuracy_load = pickle.load(open('accuracy_model.pkl', 'rb'))
+df_load = pickle.load(open('./source/data_final.pkl', 'rb'))
+model_load = pickle.load(open('./source/model.pkl', 'rb'))
+accuracy_load = pickle.load(open('./source/accuracy_model.pkl', 'rb'))
 df_final = df_load["data"]
 
-scaler = pickle.load(open("scaler.pkl", "rb"))
+scaler = pickle.load(open("./source/scaler.pkl", "rb"))
 
 def selected_model():
     with st.expander("CHOOSE MODEL PREDICTION"):
